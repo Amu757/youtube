@@ -14,4 +14,26 @@ app.use(express.urlencoded({extended:true,limit:"16kb"}))  // to parse url data,
 app.use(express.static("public"))  // a common accessible folder to store resources
 app.use(cookieparser())
 
+
+// routes import
+import userRouter from './routes/user.routes.js'
+
+//routes declaration
+// /api/v1/users is standar prefix
+app.use("/api/v1/users",userRouter)  //router is get by middleware and passed to userRouter
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export {app}
