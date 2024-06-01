@@ -53,7 +53,7 @@ userSchema.pre("save", async function (next) {
   //mongoose hooks to do something before saving data into DB on save event
   if (this.isModified("password")) return next(); //if passward is not modified then return
 
-  this.password = bcrypt.hash(this.password, 10); //10 is a hash round number
+  this.password = await bcrypt.hash(this.password, 10); //10 is a hash round number
   next();
 });
 

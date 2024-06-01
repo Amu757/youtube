@@ -16,24 +16,10 @@ app.use(cookieparser())
 
 
 // routes import
-import userRouter from './routes/user.routes.js'
-
+import userRouter from "./routes/user.routes.js"
 //routes declaration
 // /api/v1/users is standar prefix
 app.use("/api/v1/users",userRouter)  //router is get by middleware and passed to userRouter
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 export {app}
