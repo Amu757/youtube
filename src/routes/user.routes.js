@@ -6,7 +6,7 @@ const router = Router()
 router.route("/register").post(
     upload.fields([
         {
-            name:"avtar", //input name in front end should match 
+            name:"avatar", //input name in front end should match 
             maxCount:1 // number of fields
         },{
             name:"coverImage", //input name in front end should match 

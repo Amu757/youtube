@@ -18,8 +18,6 @@ const registerUser = asyncHandler(async (req, res) => {
 
   // data extraction
   const { fullName, userName, email, password } = req.body;
-  console.log(fullName);
-
   //validation
   if (
     [fullName, email, userName, password].some((field) => field?.trim() === "")
@@ -29,9 +27,9 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   //find user exist
-  const existedUser = User.findOne({
+  const existedUser = await User.findOne({
     // using user model, find 1st instance and return
-    $or: [{ username }, { email }], //$or operator to check on multiple vlaues via passing a array
+    $or: [{ userName }, { email }], //$or operator to check on multiple vlaues via passing a array
   });
 
   if (existedUser)
@@ -52,8 +50,8 @@ const registerUser = asyncHandler(async (req, res) => {
   // create user in mongodb
   const user = await User.create({
     fullName,
-    avatar: avatar.url,
-    coverImage: coverImage?.url || "", //if coverImage is not given then just put it empty
+    avatar: avatar,
+    coverImage: coverImage || "", //if coverImage is not given then just put it empty
     email,
     password,
     userName: userName.toLowerCase(),
@@ -68,8 +66,11 @@ const registerUser = asyncHandler(async (req, res) => {
 
 
   //sending response
-  return res.status(201).json(
-    ApiResponse(200,createdUser,"User Registered successfuly ")  // return res obj then pass value to apiresponse constructor with code, data, msg
+  return res.status(201).json({
+    msg:"User Registered successfuly ",createdUser
+  }
+
+  //  new ApiResponse(200,createdUser,"User Registered successfuly ")  // return res obj then pass value to apiresponse constructor with code, data, msg
   )
   
 });

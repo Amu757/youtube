@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 
 const userSchema = new Schema(
   {
-    username: {
+    userName: {
       type: String,
       required: true,
       unique: true,
@@ -51,7 +51,7 @@ const userSchema = new Schema(
 
 userSchema.pre("save", async function (next) {
   //mongoose hooks to do something before saving data into DB on save event
-  if (this.isModified("password")) return next(); //if passward is not modified then return
+  if (!this.isModified("password")) return next(); //if passward is not modified then return
 
   this.password = await bcrypt.hash(this.password, 10); //10 is a hash round number
   next();
