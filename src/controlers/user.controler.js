@@ -9,18 +9,7 @@ const home = (req,res)=>{
 }
 
 const registerUser = asyncHandler(async (req, res) => {
-  //collect data from user
-  //validate
-  // if required data is not avilable from req.body then return client error all fields are necessory
-  // else if user already exist : username, email
-  // else if profile pic availabe then upload to cloudnary
-  // else if check password === cpassword false then return password should match with cpassword
-  // create user object - create entry in db
-  // remove password and refresh token from res
-  // chech user creation
-  // return res
-
-
+  
   // data extraction
   const { fullName, userName, email, password } = req.body;
   //validation
