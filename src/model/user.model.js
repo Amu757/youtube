@@ -59,7 +59,7 @@ userSchema.pre("save", async function (next) {
 
 userSchema.methods.isPasswordCorrect = async function (password) {
   //mongoose userdefined methods
-  await bcrypt.compare(password, this.password); //methods also has access to database objects
+  return await bcrypt.compare(password, this.password); //methods also has access to database objects
 };
 
 userSchema.methods.generateAccessToken = function () {
