@@ -5,14 +5,14 @@ import jwt from "jsonwebtoken"
 export const verifyJwt= asyncHandler(async(req,res,next)=>{
   try {
       //get token from req via cookie or header
-   const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer","")  //replacing Beared keyword from header
+      const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer","")  //replacing Beared keyword from header
+      
+      if(!token) throw new ApiError(401,"Unauthorized request")
+        
+        //verify and deconde token
+        const decodedToken = jwt.verify(token,process.env.ACCESS_TOKEN_SECRET)  
   
-   if(!token) throw new ApiError(401,"Unauthorized request")
-  
-      //verify and deconde token
-  const decodedToken = jwt.verify(token,process.env.ACCESS_TOKEN_SECRET)  
-  
-      const user = await User.findById(decodedToken?._id).select("-password -refreshToken")
+      const user = await User.findById(decodedToken?._id).select("-password -refreshToken")  
   
   //
   if(!user){
@@ -21,6 +21,8 @@ export const verifyJwt= asyncHandler(async(req,res,next)=>{
     
     //add user obj in req obj
     req.user = user;
+    console.log("user updated with blank token ",req.user)
+
     next()
 } catch (error) {
       throw new ApiError(401,  error.message || "Invalid Access Token");
