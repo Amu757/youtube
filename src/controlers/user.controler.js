@@ -165,9 +165,8 @@ const logOutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id, //how to find
     {
-      $set: {
-        //update user data
-        refreshToken: undefined,
+      $unset: {
+        refreshToken: 1, //removes token
       },
     },
     {
@@ -190,7 +189,6 @@ const logOutUser = asyncHandler(async (req, res) => {
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
   const incomingRefToken = req.cookies.refreshToken || req.body.refreshToken; //if user is using phone
-  console.log(incomingRefToken);
 
   if (!incomingRefToken) throw new ApiError(401, "Unauthorized request");
 
@@ -204,8 +202,10 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
     if (!user) throw new ApiError(401, "Invalid Refresh Token");
 
-    if (incomingRefToken !== user?.refreshToken)
-      throw new ApiError(401, "Refresh token is expired or used");
+    if (incomingRefToken !== user?.refreshToken) {
+      console.log("token expired");
+      throw new ApiError(401, "Refresh token is expired");
+    }
 
     const options = {
       httpOnly: true,
@@ -219,7 +219,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     return res
       .status(200)
       .cookie("accessToken", accessToken, options)
-      .cookie("refreshToken", newRefreshTokenToken, options)
+      .cookie("refreshToken", newRefreshToken, options)
       .json(
         new ApiResponse(
           200,
@@ -271,6 +271,9 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
         email,
       },
     },
+    {
+      new: true,
+    },
     { validateBeforeSave: false }
   ).select("-password");
 
@@ -284,13 +287,13 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   if (!avatarLocalPath) throw new ApiError(400, "Avatar file is missing");
 
   const avatar = await uploadOnCloudinary(avatarLocalPath);
-  if (!avatar.url) throw new ApiError(400, "error while uploading avatar");
+  if (!avatar) throw new ApiError(400, "error while uploading avatar");
 
   const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set: {
-        avatar: avatar.url,
+        avatar: avatar,
       },
     },
     { new: true }
@@ -303,19 +306,18 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
 
 const updateUserCoverImage = asyncHandler(async (req, res) => {
   const coverImageLocalPath = req.file?.path;
-  console.log(coverImageLocalPath);
 
   if (!coverImageLocalPath)
     throw new ApiError(400, "CoverImage file is missing");
 
   const coverImage = await uploadOnCloudinary(coverImageLocalPath);
-  if (!coverImage.url) throw new ApiError(400, "error while uploading avatar");
+  if (!coverImage) throw new ApiError(400, "error while uploading avatar");
 
   const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
       $set: {
-        coverImage: coverImage.url,
+        coverImage: coverImage,
       },
     },
     { new: true }
@@ -328,7 +330,6 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
 
 const getUserCannelProfile = asyncHandler(async (req, res) => {
   const { username } = req.params;
-
   if (!username?.trim()) throw new ApiError(401, "username is required");
 
   //aggregation pipeline to join and get processed output from multiple collections in mongodb
@@ -337,7 +338,7 @@ const getUserCannelProfile = asyncHandler(async (req, res) => {
     {
       $match: {
         //use to find a document in collection
-        username: username?.toLowerCase(), //by username
+        userName: username?.toLowerCase(), //by username
       },
     }, //this filter returns single document
     {
@@ -396,7 +397,7 @@ const getUserCannelProfile = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "User Channel Fetched Sussessfully "));
+    .json(new ApiResponse(200, channel, "User Channel Fetched Sussessfully "));
 });
 
 const getWatchHistory = asyncHandler(async (req, res) => {
@@ -458,7 +459,6 @@ const getWatchHistory = asyncHandler(async (req, res) => {
 });
 
 export {
-  home,
   registerUser,
   logInUser,
   logOutUser,

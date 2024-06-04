@@ -1,6 +1,5 @@
 import { Router } from "express";
 import {
-  home,
   registerUser,
   logInUser,
   logOutUser,
@@ -16,8 +15,6 @@ import {
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJwt } from "../middlewares/auth.middleware.js";
 const router = Router();
-
-router.route("/home").get(home);
 
 router.route("/register").post(
   upload.fields([
@@ -52,7 +49,7 @@ router
 
 router
   .route("/coverImage")
-  .patch(verifyJwt, upload.single(), updateUserCoverImage);
+  .patch(verifyJwt, upload.single("coverImage"), updateUserCoverImage);
 
 router.route("/c/:username").get(verifyJwt, getUserCannelProfile);
 
