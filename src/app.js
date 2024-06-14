@@ -17,9 +17,13 @@ app.use(cookieparser())
 
 // routes import
 import userRouter from "./routes/user.routes.js"
+import healthRouter from "./routes/healthcheck.routes.js"
+
+
 //routes declaration
 // /api/v1/users is standar prefix
 app.use("/api/v1/users",userRouter)  //router is get by middleware and passed to userRouter
+app.use("/api/v1/health",healthRouter) 
 
 // Error handling middleware
 app.use((err, req, res, next) => {
