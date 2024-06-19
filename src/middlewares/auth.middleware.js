@@ -26,7 +26,7 @@ import jwt from "jsonwebtoken";
 
     //add user obj in req obj
     req.user = user;
-    console.log("user updated with blank token ", req.user);
+    console.log("user updated with blank token ");
 
     next();
   } catch (error) {
