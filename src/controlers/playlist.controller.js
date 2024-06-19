@@ -112,6 +112,48 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
 const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
   const { playlistId, videoId } = req.params;
   // TODO: remove video from playlist
+  if (!playlistId || !videoId)
+    throw new ApiError(401, "playlistId and videoId are required ");
+
+  const playlist = await Playlist.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(playlistId),
+      },
+    },
+    {
+      $lookup: {
+        from: "videos",
+        localField: "videos",
+        foreignField: "_id",
+        as: "videoDetails",
+      },
+    },
+    {
+      $project: {
+        videos: 1,
+        videoExists: { $in: [new mongoose.Types.ObjectId(videoId), "$videos"] ,
+        },
+      },
+    },
+  ]);
+
+  if (playlist.length === 0) throw new ApiError(401, "playlist not found");
+
+  if (!playlist[0].videoExists)
+    throw new ApiError(401, "Video is not present in playlist");
+
+  const updatePlaylist = await Playlist.findByIdAndUpdate(
+    playlistId,
+    {
+      $pull: { videos: videoId },
+    },
+    { new: true }
+  );
+
+  if(!updatePlaylist) throw new ApiError(500,"failed to delete video from playlist")
+
+  return res.status(201).json(new ApiResponse(200,"video is deleted to playlist"))
 });
 
 const deletePlaylist = asyncHandler(async (req, res) => {
