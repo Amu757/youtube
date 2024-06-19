@@ -20,6 +20,7 @@ import userRouter from "./routes/user.routes.js"
 import healthRouter from "./routes/healthcheck.routes.js"
 import videoRouter from "./routes/video.routes.js"
 import subscriptionRouter from "./routes/subscription.routes.js"
+import playlistRouter from "./routes/playlist.routes.js"
 
 //routes declaration
 // /api/v1/users is standar prefix
@@ -27,6 +28,7 @@ app.use("/api/v1/users",userRouter)  //router is get by middleware and passed to
 app.use("/api/v1/health",healthRouter) 
 app.use("/api/v1",videoRouter) 
 app.use("/api/v1/subscription",subscriptionRouter) 
+app.use("/api/v1/playlist",playlistRouter) 
 
 // Error handling middleware
 app.use((err, req, res, next) => {

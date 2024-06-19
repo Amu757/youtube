@@ -84,7 +84,7 @@ if(!thumbnailLocalPath) throw new ApiError(401,"issue in uploading files to serv
 
   if(!newVideo) throw new ApiError(500,"video is not created in mongodb")
 
-  newVideo.select("-owener")
+  
   return res.status(200).json(
     new ApiResponse(201,newVideo,"video is created successfuly")
   )
