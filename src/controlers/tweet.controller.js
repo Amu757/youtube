@@ -38,11 +38,50 @@ const getUserTweets = asyncHandler(async (req, res) => {
 
 const updateTweet = asyncHandler(async (req, res) => {
     //TODO: update tweet
+        const { tweetId } = req.params;
+        if (!tweetId) throw ApiError(401, "tweetId is required");
+      
+        const { content } = req.body;
+        if (!content) throw ApiError(401, "content is required");
+      
+        const updatedTweet = await Tweet.findOneAndUpdate(
+          { _id: new mongoose.Types.ObjectId(tweetId) },
+          {
+            $set: {
+              content,
+            },
+          },
+          {
+            new: true,
+          }
+        );
+      
+        if (!updatedTweet) throw new ApiError(500, "issue in updatting Tweet");
+      
+        return res
+          .status(200)
+          .json(new ApiResponse(201, updatedTweet, "tweet updated successfuly"));
 })
 
 const deleteTweet = asyncHandler(async (req, res) => {
     //TODO: delete tweet
-})
+        const { tweetId } = req.params;
+        if (!tweetId) throw ApiError(401, "tweetId is required");
+      
+        const deletedTweet = await Tweet.findOneAndDelete(
+          { _id: new mongoose.Types.ObjectId(tweetId) },
+          {
+            new: true,
+          }
+        );
+      
+        if (!deletedTweet)
+          throw new ApiError(500, "issue in deleting Tweet no Tweet found");
+      
+        return res
+          .status(200)
+          .json(new ApiResponse(201, deletedTweet, "Tweet deleted successfuly"));
+      });
 
 export {
     createTweet,
