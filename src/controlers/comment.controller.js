@@ -11,7 +11,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
 
   const { page = 1, limit = 10 } = req.query;
 
-  const allComments = await Comment.findOne({
+  const allComments = await Comment.find({
     video: new mongoose.Types.ObjectId(videoId)
   }).select("-video")
 
