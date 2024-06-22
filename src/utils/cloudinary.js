@@ -21,10 +21,10 @@ const uploadOnCloudinary = async (localFilePath) => {
       resource_type: "auto",
     });
 
-    // console.log("file is uploaded on cloudinary", response.url);
-    // fs.unlinkSync(localFilePath)
-    if (localFilePath) fs.unlinkSync(localFilePath);
-    return response.url;
+    console.log("file is uploaded on cloudinary", response);
+    fs.unlinkSync(localFilePath);
+    
+    return response.url, response.public_id;
   } catch (error) {
     // fs.unlinkSync(localFilePath);
 
@@ -34,4 +34,19 @@ const uploadOnCloudinary = async (localFilePath) => {
     return null;
   } 
 };
-export { uploadOnCloudinary };
+
+const getResourseDetails = async (publicId,isVideo)=>{
+ try {
+  let resourceType;
+  if(isVideo)
+   resourceType='video';
+ else
+   resourceType='image';
+   console.log("searching for   ",publicId)
+   const details = await cloudinary.api.resource(publicId,{resource_type: resourceType})
+   return details;
+ } catch (error) {
+  console.log("error fetching rewourse info from cloudinary: ",error);
+ }
+}
+export { uploadOnCloudinary,getResourseDetails };

@@ -11,7 +11,7 @@ const getChannelStats = asyncHandler(async (req, res) => {
   // TODO: Get the channel stats like total video views, total subscribers, total videos, total likes etc.
 
   //total video views
-  
+
 
 
 
@@ -86,6 +86,9 @@ const getChannelStats = asyncHandler(async (req, res) => {
   ]);
 
   const myTotalLikes = totalLikes[0].likeCount
+
+
+  console.log(myTotalLikes,myTotalVideos,mytotalSubscribers)
 });
 
 const getChannelVideos = asyncHandler(async (req, res) => {

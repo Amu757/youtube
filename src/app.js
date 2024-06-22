@@ -30,7 +30,7 @@ import dashboardRouter from "./routes/dashboard.routes.js"
 // /api/v1/users is standar prefix
 app.use("/api/v1/users",userRouter)  //router is get by middleware and passed to userRouter
 app.use("/api/v1/health",healthRouter) 
-app.use("/api/v1",videoRouter) 
+app.use("/api/v1/video",videoRouter) 
 app.use("/api/v1/subscription",subscriptionRouter) 
 app.use("/api/v1/playlist",playlistRouter) 
 app.use("/api/v1/like",likeRouter) 

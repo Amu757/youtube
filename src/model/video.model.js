@@ -7,6 +7,10 @@ const videoSchema = new Schema(
       type: String, //coudnary url
       required: true,
     },
+    coudinary_public_id:{
+      type:String,
+      required:true
+    },
     thumbnail: {
       type: String, //coudnary url
       required: true,
