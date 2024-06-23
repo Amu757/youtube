@@ -8,71 +8,66 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 const toggleSubscription = asyncHandler(async (req, res) => {
   const { channelId } = req.params;
 
-  console.log(channelId);
   // TODO: toggle subscription
   if (!channelId) throw new ApiError(401, "channelId is required");
 
-  const alreadySubscribed = await Subscription.findOne({channel:channelId,subscriber:req.user._id})
+  const alreadySubscribed = await Subscription.findOne({
+    channel: channelId,
+    subscriber: req.user._id,
+  });
 
-  let toggeled,msg;
-  if (alreadySubscribed){
-    msg = "Un-Subscribed "
-    toggeled = await Subscription.findOneAndUpdate({
-        channel:channelId
-    },
-    {
-        $pull:{
-            subscriber:req.user._id
-        }
-    },{
-        new:true
-    }
-)
-  }else{
-    console.log("inside else clouse")
-    msg = "Subscribed "
-    toggeled = await Subscription.findOneAndUpdate({
-        channel:channelId
-    },
-    {
-        $addToSet:{
-            subscriber: req.user._id,
-        }
-    },{
-        new:true,
-        upsert:true
-    })
+  let toggeled, msg;
+  if (alreadySubscribed) {
+    msg = "Un-Subscribed ";
+    toggeled = await Subscription.findOneAndDelete(
+      {
+        channel: channelId,
+      },
+      {
+        new: true,
+      }
+    );
+  } else {
+    msg = "Subscribed ";
+    toggeled = await Subscription.findOneAndUpdate(
+      {
+        channel: channelId,
+      },
+      {
+        $addToSet: {
+          subscriber: req.user._id,
+        },
+      },
+      {
+        new: true,
+        upsert: true,
+      }
+    );
   }
-    
-  console.log("value of toggeled: ",toggeled)
-    
-    if(!toggeled)throw new ApiError(500, "something wrong in server toggele subscription api");
 
+  if (!toggeled)
+    throw new ApiError(
+      500,
+      "something wrong in server toggele subscription api"
+    );
 
-    return res
+  return res
     .status(201)
     .json(
-      new ApiResponse(201, toggeled, "subscription is toggeled successfuly: "+msg)
+      new ApiResponse(
+        201,
+        toggeled,
+        "subscription is toggeled successfuly: " + msg
+      )
     );
-  });
+});
 
 // controller to return subscriber list of a channel
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
   const { channelId } = req.params;
   if (!channelId) throw new ApiError(401, "channelId is required ");
 
-  const subscribers = await Subscription.aggregate([
-    {
-      $match: {
-        channel: channelId, //will find all subscribers where channel id is present
-      },
-    },
-    {
-      $project: {
-        channel: 0,
-      },
-    },
-  ]);
+  const subscribers = await Subscription.find({channel:channelId}).select("-channel -__v")
 
   if (!subscribers)
     throw new ApiError(
@@ -97,18 +92,9 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
 
   if (!subscriberId) throw new ApiError(401, "subscriberid is required ");
 
-  const channels = await Subscription.aggregate([
-    {
-      $match: {
-        subscriber: subscriberId, //will find all channels that i have subscribed
-      },
-    },
-    {
-      $project: {
-        subscriber: 0,
-      },
-    },
-  ]);
+  const channels = await Subscription.find({ subscriber: subscriberId }).select(
+    "-subscriber -__v"
+  );
 
   if (!channels)
     throw new ApiError(
