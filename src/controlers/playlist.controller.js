@@ -17,7 +17,7 @@ const createPlaylist = asyncHandler(async (req, res) => {
   const newPlaylist = await Playlist.create({
     name,
     description,
-    owner: req.user,
+    owner: req.user._id,
   });
 
   if (!newPlaylist)
@@ -63,7 +63,7 @@ const getPlaylistById = asyncHandler(async (req, res) => {
 });
 
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
-  const { playlistId, videoId } = req.params;
+  const { videoId,playlistId } = req.params;
 
   if (!playlistId || !videoId)
     throw new ApiError(401, "playlistId and videoId are required ");
