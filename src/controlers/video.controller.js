@@ -83,7 +83,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
     title,
     duration: 12,
     description,
-    owner: req.user,
+    owner: req.user._id,
   });
 
   if (!newVideo) throw new ApiError(500, "video is not created in mongodb");
