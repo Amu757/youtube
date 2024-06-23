@@ -41,7 +41,7 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
     .status(200)
     .json(
       new ApiResponse(
-        201,
+        200,
         toggledVideo,
         "video like is toggled successfuly " + msg
       )
@@ -84,7 +84,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
     .status(200)
     .json(
       new ApiResponse(
-        201,
+        200,
         toggledComment,
         "comment like is toggled successfuly " + msg
       )
@@ -127,7 +127,7 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
     .status(200)
     .json(
       new ApiResponse(
-        201,
+        200,
         toggledTweet,
         "tweet like is toggled successfuly " + msg
       )
@@ -141,7 +141,7 @@ const getLikedVideos = asyncHandler(async (req, res) => {
 
   const allLikedVideos = await Like.find({
     likedBy: new mongoose.Types.ObjectId(userId),
-  }).select("-owner -video -comment");
+  }).select("-likedBy -comment");
 
   if (!allLikedVideos) throw new ApiError(500, "no liked videos found");
 
