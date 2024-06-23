@@ -9,111 +9,72 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 const getChannelStats = asyncHandler(async (req, res) => {
   // TODO: Get the channel stats like total video views, total subscribers, total videos, total likes etc.
-
-  //total video views
-
-
-
-
-  //total subscribers
-  const totalSubscribers = await User.aggregate([
-    {
-      $match: {
-        _id: new mongoose.Types.ObjectId(req.user._id),
+  try {
+    //total video views
+    const totalViews = await Video.aggregate([
+      {
+        $match: {
+          owner: new mongoose.Types.ObjectId(req.user._id),
+        },
       },
-    },
-    {
-      $lookup: {
-        from: "subscriptions",
-        localField: "_id",
-        foreignField: "subscriber",
-        as: "mySubscribers",
+      {
+        $group: {
+          _id: "$title",
+          count: { $sum: "$view" },
+        },
       },
-    },
-    {
-      $project: {
-        subscribersCount: { $size: "$mySubscribers" },
-      },
-    },
-  ]);
+    ]);
 
-  const mytotalSubscribers = totalSubscribers[0].subscribersCount
+    if (!totalViews) throw new ApiError(500, "some issue fetching total views");
 
-  //total videos
-  const totalVideos = await User.aggregate([
-    {
-      $match: {
-        _id: new mongoose.Types.ObjectId(req.user._id),
-      },
-    },
-    {
-      $lookup: {
-        from: "videos",
-        localField: "_id",
-        foreignField: "owner",
-        as: "myVideos",
-      },
-    },
-    {
-      $project: {
-        videoCount: { $size: "$myVideos" },
-      },
-    },
-  ]);
+    const totalViewsCount = totalViews[0].count;
 
-  const myTotalVideos = totalVideos[0].videoCount
+    //total subscribers
+    const totalSubscribers = await Subscription.find({
+      channel: req.user._id,
+    }).select("-_id -channel -__v");
 
-  //total likes 
-  const totalLikes = await User.aggregate([
-    {
-      $match: {
-        _id: new mongoose.Types.ObjectId(req.user._id),
-      },
-    },
-    {
-      $lookup: {
-        from: "likes",
-        localField: "_id",
-        foreignField: "owner",
-        as: "myliked",
-      },
-    },
-    {
-      $project: {
-        likeCount: { $size: "$myliked" },
-      },
-    },
-  ]);
+    if (!totalSubscribers)
+      throw new ApiError(500, "some issue fetching total subscribers");
 
-  const myTotalLikes = totalLikes[0].likeCount
+    const totalSubscribersCount = totalSubscribers.length;
 
+    //total videos
+    const totalVideos = await Video.find({ owner: req.user._id });
+    if (!totalVideos)
+      throw new ApiError(500, "some issue fetching total videos");
 
-  console.log(myTotalLikes,myTotalVideos,mytotalSubscribers)
+    const totalVideosCount = totalVideos.length;
+    console.log(totalVideosCount);
+
+    //total likes   ** its incorrect it finds all like by user that inclides comment and tweet likes also **
+    const totalLikes = await Like.find({ likedBy: req.user._id }).select(
+      "-comment -tweet -likedBy"
+    );
+    if (!totalLikes) throw new ApiError(500, "some issue fetching total likes");
+
+    const totalLikesCount = totalLikes.length;
+
+    const stats = {
+      totalViews: totalViewsCount,
+      totalLikes: totalLikesCount,
+      totalVideos: totalVideosCount,
+      totalSubscribers: totalSubscribersCount,
+    };
+    return res
+      .status(200)
+      .json(new ApiResponse(200, stats, "stats fetched sucessfuly"));
+  } catch (error) {
+    throw new ApiError(501, error);
+  }
 });
 
 const getChannelVideos = asyncHandler(async (req, res) => {
   // TODO: Get all the videos uploaded by the channel
 
-  const allVideos = await User.aggregate([
-    {
-      $match: {
-        _id: new mongoose.Types.ObjectId(req.user._id),
-      },
-    },
-    {
-      $lookup: {
-        from: "videos",
-        localField: "_id",
-        foreignField: "owner",
-        as: "myVideos",
-      },
-    },
-    {
-      $project: {
-        myVideos: true,
-      },
-    },
-  ]);
+  const allVideos = await Video.find({ owner: req.user._id }).select(
+    "-owner -__v -updatedAt -createdAt"
+  );
 
   if (!allVideos)
     throw new ApiError(
