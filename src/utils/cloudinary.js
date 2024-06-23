@@ -23,30 +23,64 @@ const uploadOnCloudinary = async (localFilePath) => {
 
     console.log("file is uploaded on cloudinary", response);
     fs.unlinkSync(localFilePath);
-    
-    return response.url, response.public_id;
+
+    return { url: response.url, publicId: response.public_id };
   } catch (error) {
     // fs.unlinkSync(localFilePath);
 
     // remove local file on file upload failed
-    console.log("error from file upload on cloudinary ", error);
+    // console.log("error from file upload on cloudinary ", error);
     if (localFilePath) fs.unlinkSync(localFilePath);
     return null;
-  } 
+  }
 };
 
-const getResourseDetails = async (publicId,isVideo)=>{
- try {
-  let resourceType;
-  if(isVideo)
-   resourceType='video';
- else
-   resourceType='image';
-   console.log("searching for   ",publicId)
-   const details = await cloudinary.api.resource(publicId,{resource_type: resourceType})
-   return details;
- } catch (error) {
-  console.log("error fetching rewourse info from cloudinary: ",error);
- }
-}
-export { uploadOnCloudinary,getResourseDetails };
+const getResourseDetails = async (publicId, isVideo) => {
+  try {
+    // let resourceType = isVideo ? "video" : "image";
+    // console.log("searching for   ", publicId);
+    const details = await cloudinary.api.resource(publicId);
+    // console.log(details);
+    return details;
+  } catch (error) {
+    // console.log("error fetching resourse info from cloudinary: ", error);
+  }
+};
+
+const deleteResourse = async (publicId) => {
+  try {
+    if (!publicId) return null;
+    const response = await cloudinary.uploader.destroy(publicId);
+    return response;
+  } catch (error) {
+    // console.log("error deleting resourse from cloudinary",error)
+    return null;
+  }
+};
+
+// const toggleAccess = async (oldValue,publicId)=>{
+//   try {
+
+//   let toggledOnCloudinary;
+
+//   // console.log("my public id ",publicId)
+//   let accessMode = oldValue?"authenticated":"public";
+
+//     toggledOnCloudinary = await cloudinary.api.update(
+//       publicId,
+//       {resource_type:'video', access_mode: accessMode},
+
+//     );
+
+//   console.log("toggled from cloudinary  ",toggledOnCloudinary)
+
+//   return toggledOnCloudinary;
+//   } catch (error) {
+//     // console.log("issue for toggle access from cloudinary",error)
+//     return null
+//   }
+// }
+
+
+
+export { uploadOnCloudinary, getResourseDetails, deleteResourse }; //toggleAccess
