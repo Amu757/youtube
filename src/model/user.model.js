@@ -25,6 +25,22 @@ const userSchema = new Schema(
       trim: true,
       index: true,
     },
+    day: {
+      type: String,
+      trim: true,
+    },
+    month: {
+      type: String,
+      trim: true,
+    },
+    year: {
+      type: String,
+      trim: true,
+    },
+    gender: {
+      type: String,
+      trim: true,
+    },
     avatar: {
       type: String, //url from cloudnary
       required: true,

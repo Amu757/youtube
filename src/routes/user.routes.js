@@ -28,7 +28,7 @@ router.route("/register").post(
     },
   ]),
   registerUser
-); //endpoint is handlled by registerUser controller
+); 
 
 router.route("/login").post(logInUser);
 

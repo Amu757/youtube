@@ -27,7 +27,7 @@ import tweetRouter from "./routes/tweet.routes.js"
 import dashboardRouter from "./routes/dashboard.routes.js"
 
 //routes declaration
-// /api/v1/users is standar prefix
+// /api/v1/users is standard prefix
 app.use("/api/v1/users",userRouter)  //router is get by middleware and passed to userRouter
 app.use("/api/v1/health",healthRouter) 
 app.use("/api/v1/video",videoRouter) 
@@ -41,7 +41,7 @@ app.use("/api/v1/dashboard",dashboardRouter)
 // Error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack); // Log error stack to the console
-    res.status(500).json({ error: err.message || 'Internal Server Error' });
+    res.status(err.statuscode || 500).json({ message: err.message || 'Internal Server Error' , errors : err.errors || []});
   });
 
   

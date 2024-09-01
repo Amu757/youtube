@@ -32,10 +32,16 @@ const home = (req, res) => {
 
 const registerUser = asyncHandler(async (req, res) => {
   // data extraction
-  const { fullName, userName, email, password } = req.body;
+  const userInfo = JSON.parse(req.body.userinfo);
+
+  const { fullName, userName, day, month, year, gender, email, password } =
+    userInfo;
+
   //validation
   if (
-    [fullName, email, userName, password].some((field) => field?.trim() === "")
+    [fullName, userName, gender, email, password].some(
+      (field) => field?.trim() === ""
+    )
   ) {
     // array of values .some method to check on each item if field is availabe then after triming check not empty  return true
     throw new ApiError(400, "All fields are required");
@@ -83,8 +89,12 @@ const registerUser = asyncHandler(async (req, res) => {
   const user = await User.create({
     userName: userName.toLowerCase(),
     fullName,
-    avatar: avatar,
-    coverImage: coverImage || "", //if coverImage is not given then just put it empty
+    day,
+    month,
+    year,
+    gender,
+    avatar: avatar.url,
+    coverImage: coverImage.url || "", //if coverImage is not given then just put it empty
     email,
     password,
   });
