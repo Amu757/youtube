@@ -29,9 +29,6 @@ const uploadOnCloudinary = async (localFilePath) => {
     // remove local file on file upload failed
     if (localFilePath) fs.unlinkSync(localFilePath);
     return null;
-  }finally{
-    if (localFilePath) fs.unlinkSync(localFilePath);
-    return null;
   }
 };
 

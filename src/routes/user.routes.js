@@ -32,6 +32,9 @@ router.route("/register").post(
 
 router.route("/login").post(logInUser);
 
+router.route("/loginbytoken").post(verifyJWT);
+
+
 // ********  secured routes - user must logged in   ************
 router.route("/logout").post(verifyJWT, logOutUser);
 

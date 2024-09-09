@@ -34,9 +34,33 @@ const getAllVideos = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, allVideos, "user videos fetched successfuly"));
 });
+const getSubscribedVideos = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10, sortBy, sortType } = req.query;
+  //TODO: get all videos based on sort, pagination
+  if ([page, limit, sortBy, sortType].some((field) => field?.trim() === ""))
+    throw new ApiError(400, "All fields are required");
+  const sortTypeInt = parseInt(sortType, 10);
+
+  if (sortTypeInt !== 1 && sortTypeInt !== -1)
+    throw new ApiError(
+      401,
+      "invalid sortBy value , valid options are 1 for ascending and -1 for descending"
+    );
+
+  const sortingBy = { sortType: sortTypeInt };
+  const allVideos = await Video.find()
+    .limit(limit)
+    .sort(sortingBy)
+
+  if (!allVideos) throw new ApiError(401, "no video present might you have no subscriptions");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, allVideos, "all subscribed videos fetched successfuly"));
+});
 
 const publishAVideo = asyncHandler(async (req, res) => {
-  const { title, description } = req.body;
+  const {title,description}=req.body;
   // TODO: get video, upload to cloudinary, create video
 
   if (!title && !description)
@@ -259,6 +283,7 @@ const updateViews = asyncHandler(async (req, res) => {
 
 export {
   getAllVideos,
+  getSubscribedVideos,
   publishAVideo,
   getVideoById,
   updateVideo,

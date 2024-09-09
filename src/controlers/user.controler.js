@@ -120,18 +120,17 @@ const logInUser = asyncHandler(async (req, res) => {
   //find user exist : if token match then login else check passmatch then login
   //gen access and refresh token
   //response cookies
-
-  const { email, userName, password } = req.body;
+  const { email, password } = req.body;
 
   //validate
-  if (!(userName || email)) {
+  if (!(password || email)) {
     throw new ApiError(400, "username or password is required ");
   }
 
   // find user in mongodb
-  const userExist = await User.findOne({ $or: [{ email }, { userName }] }); // check one of the fields value in mongodb
+  // const userExist = await User.findOne({ $or: [{ email, userName }] }); //check both
+  const userExist = await User.findOne({ email: email });
   if (!userExist) throw new ApiError(404, "User does not exist");
-  //compare password using userdefinded method in user model invoke using above userExist object
 
   try {
     const isPasswordValid = await userExist.isPasswordCorrect(password);
@@ -139,6 +138,7 @@ const logInUser = asyncHandler(async (req, res) => {
     if (!isPasswordValid) throw new ApiError(401, "invalid user credentials");
   } catch (error) {
     console.log("issue in password validation code", error);
+    throw error;
   }
 
   //method to update token in db
