@@ -34,6 +34,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, allVideos, "user videos fetched successfuly"));
 });
+
 const getSubscribedVideos = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10, sortBy, sortType } = req.query;
   //TODO: get all videos based on sort, pagination
@@ -48,7 +49,9 @@ const getSubscribedVideos = asyncHandler(async (req, res) => {
     );
 
   const sortingBy = { sortType: sortTypeInt };
-  const allVideos = await Video.find()
+  const allVideos = await Video.find(
+    // make a loop ware first find the list of my subscriped chanels and then get videos by chanel id
+  )
     .limit(limit)
     .sort(sortingBy)
 
