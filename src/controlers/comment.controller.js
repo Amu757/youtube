@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { Comment } from "../model/comment.model.js";
+import { User } from "../model/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
@@ -15,18 +16,31 @@ const getVideoComments = asyncHandler(async (req, res) => {
     video: new mongoose.Types.ObjectId(videoId)
   }).select("-video")
 
+  let userinfo = []
+  for(let i=0;i<allComments.length;i++){
+    let userfound = await User.findOne({
+      _id: new mongoose.Types.ObjectId(allComments[i].owner)
+    }).select("-watchHistory -password -refreshToken")
+
+    if(userfound) userinfo.push(userfound)
+  }
+
   if(!allComments) throw new ApiError(500,"No comments found for the videoId")
 
- return res.status(200).json(new ApiResponse(200,allComments,"all comment of the videoId are fetched successfully"))
+  const commentsData ={
+    userdata: userinfo,
+    comments: allComments
+  }
+ return res.status(200).json(new ApiResponse(200,commentsData,"all comment of the videoId are fetched successfully"))
 });
 
 const addComment = asyncHandler(async (req, res) => {
   // TODO: add a comment to a video
   const { videoId } = req.params;
-  if (!videoId) throw ApiError(401, "videoid is required");
+  if (!videoId) throw new ApiError(401, "videoid is required");
 
   const { content } = req.body;
-  if (!content) throw ApiError(401, "content is required");
+  if (!content) throw new ApiError(401, "content is required");
 
   const newComment = await Comment.create({
     content,
