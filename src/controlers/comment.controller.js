@@ -13,25 +13,35 @@ const getVideoComments = asyncHandler(async (req, res) => {
   const { page = 1, limit = 10 } = req.query;
 
   const allComments = await Comment.find({
-    video: new mongoose.Types.ObjectId(videoId)
-  }).select("-video")
+    video: new mongoose.Types.ObjectId(videoId),
+  })
+    .select("-video")
+    .sort({ updatedAt: 1 });
 
-  let userinfo = []
-  for(let i=0;i<allComments.length;i++){
+  let userinfo = [];
+  for (let i = 0; i < allComments.length; i++) {
     let userfound = await User.findOne({
-      _id: new mongoose.Types.ObjectId(allComments[i].owner)
-    }).select("-watchHistory -password -refreshToken")
-
-    if(userfound) userinfo.push(userfound)
+      _id: new mongoose.Types.ObjectId(allComments[i].owner),
+    }).select("-watchHistory -password -refreshToken");
+    if (userfound) userinfo.push(userfound);
   }
 
-  if(!allComments) throw new ApiError(500,"No comments found for the videoId")
+  if (!allComments)
+    throw new ApiError(500, "No comments found for the videoId");
 
-  const commentsData ={
+  const commentsData = {
     userdata: userinfo,
-    comments: allComments
-  }
- return res.status(200).json(new ApiResponse(200,commentsData,"all comment of the videoId are fetched successfully"))
+    comments: allComments,
+  };
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        commentsData,
+        "all comment of the videoId are fetched successfully"
+      )
+    );
 });
 
 const addComment = asyncHandler(async (req, res) => {
@@ -60,14 +70,14 @@ const updateComment = asyncHandler(async (req, res) => {
   const { commentId } = req.params;
   if (!commentId) throw ApiError(401, "commentId is required");
 
-  const { content } = req.body;
-  if (!content) throw ApiError(401, "content is required");
+  const { newcontent } = req.body;
+  if (!newcontent) throw ApiError(401, "content is required");
 
   const updatedComment = await Comment.findOneAndUpdate(
     { _id: new mongoose.Types.ObjectId(commentId) },
     {
       $set: {
-        content,
+        content: newcontent,
       },
     },
     {

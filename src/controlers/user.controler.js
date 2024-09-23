@@ -34,12 +34,12 @@ const registerUser = asyncHandler(async (req, res) => {
   // data extraction
   const userInfo = JSON.parse(req.body.userinfo);
 
-  const { fullName, userName, day, month, year, gender, email, password } =
+  const { fullName, userName, day, month, year, gender,about, email, password } =
     userInfo;
 
   //validation
   if (
-    [fullName, userName, gender, email, password].some(
+    [fullName, userName, gender,about, email, password].some(
       (field) => field?.trim() === ""
     )
   ) {
@@ -93,6 +93,7 @@ const registerUser = asyncHandler(async (req, res) => {
     month,
     year,
     gender,
+    about,
     avatar: avatar.url,
     coverImage: coverImage.url || "", //if coverImage is not given then just put it empty
     email,
@@ -391,8 +392,9 @@ const getUserCannelProfile = asyncHandler(async (req, res) => {
     {
       $project: {
         //to return only required fields to manage network bandwidth
-        fullName: 1,
         username: 1,
+        about:1,
+        fullName: 1,
         email: 1,
         subscribersCount: 1,
         channelsSubscribedToCount: 1,

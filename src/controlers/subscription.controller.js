@@ -67,7 +67,9 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
   const { channelId } = req.params;
   if (!channelId) throw new ApiError(401, "channelId is required ");
 
-  const subscribers = await Subscription.find({channel:channelId}).select("-channel -__v")
+  const subscribers = await Subscription.find({ channel: channelId }).select(
+    "-channel -__v"
+  );
 
   if (!subscribers)
     throw new ApiError(
@@ -108,5 +110,34 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
       new ApiResponse(200, channels, "your subscribed channel list is fetched")
     );
 });
+const getSubscribedStatus = asyncHandler(async (req, res) => {
+  const { channelId } = req.params;
 
-export { toggleSubscription, getUserChannelSubscribers, getSubscribedChannels };
+  if (!channelId) throw new ApiError(401, "subscriberid is required ");
+
+  const isSubscribed = await Subscription.findOne({
+    channel: channelId,
+    subscriber: req.user._id,
+  }).select("-subscriber -__v");
+
+  let subscribedStatus;
+  if (!isSubscribed) subscribedStatus = false;
+  else subscribedStatus = true;
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        subscribedStatus,
+        "your subscribed channel list is fetched"
+      )
+    );
+});
+
+export {
+  toggleSubscription,
+  getUserChannelSubscribers,
+  getSubscribedChannels,
+  getSubscribedStatus,
+};

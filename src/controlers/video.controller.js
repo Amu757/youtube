@@ -22,17 +22,58 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
   const sortingBy = { sortType: sortTypeInt };
   const allVideos = await Video.find({
-    owner: new mongoose.Types.ObjectId(req.user._id),
+    isPublished: true,
   })
     .limit(limit)
     .sort(sortingBy)
-    .select("-owner");
+    .select("-coudinary_public_id -__v -isPublished");
 
-  if (!allVideos) throw new ApiError(401, "no video present for current user");
+  if (!allVideos) throw new ApiError(401, "no video present");
+  // Use Promise.all to handle async inside map
+  const usersInfo = await Promise.all(
+    allVideos.map(async (element) => {
+      return await User.findOne({ _id: element.owner }).select(
+        "-password -refreshToken -updatedAt"
+      );
+    })
+  );
+  const data = {
+    usersInfo: usersInfo,
+    allVideos: allVideos,
+  };
 
   return res
     .status(200)
-    .json(new ApiResponse(200, allVideos, "user videos fetched successfuly"));
+    .json(new ApiResponse(200, data, "all videos fetched successfuly"));
+});
+
+const getMyVideos = asyncHandler(async (req, res) => {
+  const { page = 1, limit = 10, sortBy, sortType } = req.query;
+  //TODO: get all videos based on sort, pagination
+  if ([page, limit, sortBy, sortType].some((field) => field?.trim() === ""))
+    throw new ApiError(400, "All fields are required");
+  const sortTypeInt = parseInt(sortType, 10);
+
+  if (sortTypeInt !== 1 && sortTypeInt !== -1)
+    throw new ApiError(
+      401,
+      "invalid sortBy value , valid options are 1 for ascending and -1 for descending"
+    );
+
+  const sortingBy = { sortType: sortTypeInt };
+  const allVideos = await Video.find({
+    owner: req.user._id,
+  })
+    .limit(limit)
+    .sort(sortingBy)
+    .select("-coudinary_public_id -__v -isPublished");
+
+  if (!allVideos) throw new ApiError(401, "no video present");
+  
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, allVideos, "all videos fetched successfuly"));
 });
 
 const getSubscribedVideos = asyncHandler(async (req, res) => {
@@ -49,21 +90,29 @@ const getSubscribedVideos = asyncHandler(async (req, res) => {
     );
 
   const sortingBy = { sortType: sortTypeInt };
-  const allVideos = await Video.find(
+  const allVideos = await Video
+    .find
     // make a loop ware first find the list of my subscriped chanels and then get videos by chanel id
-  )
+    ()
     .limit(limit)
-    .sort(sortingBy)
+    .sort(sortingBy);
 
-  if (!allVideos) throw new ApiError(401, "no video present might you have no subscriptions");
+  if (!allVideos)
+    throw new ApiError(401, "no video present might you have no subscriptions");
 
   return res
     .status(200)
-    .json(new ApiResponse(200, allVideos, "all subscribed videos fetched successfuly"));
+    .json(
+      new ApiResponse(
+        200,
+        allVideos,
+        "all subscribed videos fetched successfuly"
+      )
+    );
 });
 
 const publishAVideo = asyncHandler(async (req, res) => {
-  const {title,description}=req.body;
+  const { title, description } = req.body;
   // TODO: get video, upload to cloudinary, create video
 
   if (!title && !description)
@@ -227,16 +276,16 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
 
   if (!userVideo) throw new ApiError(401, "no video exist with this video id");
   const oldValue = userVideo.isPublished;
-  
+
   let publicUrl;
-  if(!oldValue){
+  if (!oldValue) {
     //meke is public
-    const string = userVideo.videoFile
-    publicUrl = string.slice(0,-7);
-    console.log(publicUrl)
+    const string = userVideo.videoFile;
+    publicUrl = string.slice(0, -7);
+    console.log(publicUrl);
   }
-  
-  const url = oldValue?userVideo.videoFile+"private":publicUrl;
+
+  const url = oldValue ? userVideo.videoFile + "private" : publicUrl;
 
   // const toggled = toggleAccess(oldValue,userVideo.coudinary_public_id)
   // if(!toggled || toggled === null) throw new ApiError(501,"issue in cloudinary toggle access api")
@@ -246,7 +295,7 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
     {
       $set: {
         isPublished: !oldValue,
-videoFile:url
+        videoFile: url,
       },
     },
     { new: true }
@@ -293,4 +342,5 @@ export {
   deleteVideo,
   togglePublishStatus,
   updateViews,
+  getMyVideos
 };
