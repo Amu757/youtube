@@ -29,11 +29,16 @@ const createPlaylist = asyncHandler(async (req, res) => {
 });
 
 const getUserPlaylists = asyncHandler(async (req, res) => {
+  // const userId = req.user._id;
   const { userId } = req.params;
-  //TODO: get user playlists
+  // console.log("from back ", userId);
   if (!userId) throw new ApiError(401, "userId is required");
 
-  const playlistExists = await Playlist.find({ owner: userId });
+  const playlistExists = await Playlist.find({
+    owner: new mongoose.Types.ObjectId(userId),
+  });
+
+  // console.log("playlist from back ", playlistExists);
 
   if (!playlistExists)
     throw new ApiError(401, "No Playlist exist for current user");
@@ -63,7 +68,7 @@ const getPlaylistById = asyncHandler(async (req, res) => {
 });
 
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
-  const { videoId,playlistId } = req.params;
+  const { videoId, playlistId } = req.params;
 
   if (!playlistId || !videoId)
     throw new ApiError(401, "playlistId and videoId are required ");
@@ -85,8 +90,7 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
     {
       $project: {
         videos: 1,
-        videoExists: { $in: [new mongoose.Types.ObjectId(videoId), "$videos"] ,
-        },
+        videoExists: { $in: [new mongoose.Types.ObjectId(videoId), "$videos"] },
       },
     },
   ]);
@@ -104,9 +108,11 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
     { new: true }
   );
 
-  if(!updatePlaylist) throw new ApiError(500,"failed to update playlist")
+  if (!updatePlaylist) throw new ApiError(500, "failed to update playlist");
 
-  return res.status(201).json(new ApiResponse(200,"video is added to playlist"))
+  return res
+    .status(201)
+    .json(new ApiResponse(200, "video is added to playlist"));
 });
 
 const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
@@ -132,8 +138,7 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
     {
       $project: {
         videos: 1,
-        videoExists: { $in: [new mongoose.Types.ObjectId(videoId), "$videos"] ,
-        },
+        videoExists: { $in: [new mongoose.Types.ObjectId(videoId), "$videos"] },
       },
     },
   ]);
@@ -151,9 +156,12 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
     { new: true }
   );
 
-  if(!updatePlaylist) throw new ApiError(500,"failed to delete video from playlist")
+  if (!updatePlaylist)
+    throw new ApiError(500, "failed to delete video from playlist");
 
-  return res.status(201).json(new ApiResponse(200,"video is deleted to playlist"))
+  return res
+    .status(201)
+    .json(new ApiResponse(200, "video is deleted to playlist"));
 });
 
 const deletePlaylist = asyncHandler(async (req, res) => {
