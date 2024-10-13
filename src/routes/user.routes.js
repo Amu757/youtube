@@ -11,9 +11,12 @@ import {
   updateAccountDetails,
   getUserCannelProfile,
   getWatchHistory,
+  loginbyRefreshToken
 } from "../controlers/user.controler.js";
 import { upload } from "../middlewares/multer.middleware.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+import {
+  verifyJWT,
+} from "../middlewares/auth.middleware.js";
 const router = Router();
 
 router.route("/register").post(
@@ -28,12 +31,11 @@ router.route("/register").post(
     },
   ]),
   registerUser
-); 
+);
 
 router.route("/login").post(logInUser);
 
-router.route("/loginbytoken").post(verifyJWT);
-
+router.route("/loginbytoken").post(loginbyRefreshToken);
 
 // ********  secured routes - user must logged in   ************
 router.route("/logout").post(verifyJWT, logOutUser);

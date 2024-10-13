@@ -34,12 +34,21 @@ const registerUser = asyncHandler(async (req, res) => {
   // data extraction
   const userInfo = JSON.parse(req.body.userinfo);
 
-  const { fullName, userName, day, month, year, gender,about, email, password } =
-    userInfo;
+  const {
+    fullName,
+    userName,
+    day,
+    month,
+    year,
+    gender,
+    about,
+    email,
+    password,
+  } = userInfo;
 
   //validation
   if (
-    [fullName, userName, gender,about, email, password].some(
+    [fullName, userName, gender, about, email, password].some(
       (field) => field?.trim() === ""
     )
   ) {
@@ -156,6 +165,8 @@ const logInUser = asyncHandler(async (req, res) => {
   const opitons = {
     httpOnly: true,
     secure: true, //only modified by server
+    sameSite: "Lax", // Helps with cross-site requests, adjust based on your needs
+    path: "/", // Path where the cookie is available
   };
 
   //add cookies in response
@@ -170,6 +181,63 @@ const logInUser = asyncHandler(async (req, res) => {
         "User Logged In Successfuly"
       ) //again sending token if user wants handle it by their way
     );
+});
+
+const loginbyRefreshToken = asyncHandler(async (req, res, next) => {
+  try {
+    //get token from req via cookie or header
+    const token =
+      req.cookies?.accessToken ||
+      req.header("Authorization")?.replace("Bearer ", ""); //replacing Beared keyword from header
+
+    if (!token) throw new ApiError(401, "Unauthorized request");
+    //verify and deconde token
+    const decodedToken = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+
+    const user = await User.findById(decodedToken?._id).select(
+      "-password -refreshToken"
+    );
+    //
+    if (!user) {
+      throw new ApiError(401, "Invalid Access Token");
+    }
+
+    //method to update token in db
+    const { accessToken, refreshToken } = await genAccessAndRefreshToken(
+      user._id
+    ); //may take time to update the db
+
+    //add user obj in req obj
+    // req.user = user;
+    // console.log("user updated with blank token ");
+
+    // res.status(200).json({
+    //   data: { accessToken: token, user },
+    // });
+
+    //cookies
+    const opitons = {
+      httpOnly: true,
+      secure: true, //only modified by server
+      sameSite: "Lax", // Helps with cross-site requests, adjust based on your needs
+      path: "/", // Path where the cookie is available
+    };
+
+    //add cookies in response
+    return res
+      .status(200)
+      .cookie("accessToken", accessToken, opitons)
+      .cookie("refreshToken", refreshToken, opitons)
+      .json(
+        new ApiResponse(
+          200,
+          { user: user, accessToken, refreshToken },
+          "User Logged In Successfuly"
+        ) //again sending token if user wants handle it by their way
+      );
+  } catch (error) {
+    throw new ApiError(401, error.message || "Invalid Access Token");
+  }
 });
 
 const logOutUser = asyncHandler(async (req, res) => {
@@ -393,7 +461,7 @@ const getUserCannelProfile = asyncHandler(async (req, res) => {
       $project: {
         //to return only required fields to manage network bandwidth
         username: 1,
-        about:1,
+        about: 1,
         fullName: 1,
         email: 1,
         subscribersCount: 1,
@@ -482,4 +550,5 @@ export {
   updateUserCoverImage,
   getUserCannelProfile,
   getWatchHistory,
+  loginbyRefreshToken,
 };
