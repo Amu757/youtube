@@ -10,7 +10,7 @@ app.use(cors({
 }))
 
 app.use(cors({
-  origin: "http://localhost:3000", // or your frontend URL during development
+  origin: "http://localhost:5173", // or your frontend URL during development
   credentials: true,
 }));
 
