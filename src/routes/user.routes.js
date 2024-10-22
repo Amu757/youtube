@@ -11,12 +11,12 @@ import {
   updateAccountDetails,
   getUserCannelProfile,
   getWatchHistory,
-  loginbyRefreshToken
+  loginbyRefreshToken,
+  addToHistory,
+  getSubscribers,
 } from "../controlers/user.controler.js";
 import { upload } from "../middlewares/multer.middleware.js";
-import {
-  verifyJWT,
-} from "../middlewares/auth.middleware.js";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
 const router = Router();
 
 router.route("/register").post(
@@ -47,6 +47,7 @@ router.route("/change-password").post(verifyJWT, changePassword);
 router.route("/current-user").get(verifyJWT, getCurrentUser);
 
 router.route("/update-account").patch(verifyJWT, updateAccountDetails);
+router.route("/update-history/:userId/videoId").patch(verifyJWT, addToHistory);
 
 router
   .route("/avatar")
@@ -57,6 +58,7 @@ router
   .patch(verifyJWT, upload.single("coverImage"), updateUserCoverImage);
 
 router.route("/c/:username").get(verifyJWT, getUserCannelProfile);
+router.route("/:userId").get(verifyJWT, getSubscribers);
 
 router.route("/history").get(verifyJWT, getWatchHistory);
 

@@ -117,8 +117,6 @@ const registerUser = asyncHandler(async (req, res) => {
   if (!createdUser)
     throw new ApiError(500, "Something went wrong while registering the user");
 
-  //sending response
-
   res.status(201).json(
     new ApiResponse(200, createdUser, "User Registered successfuly ") // return res obj then pass value to apiresponse constructor with code, data, msg
   );
@@ -480,7 +478,24 @@ const getUserCannelProfile = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, channel, "User Channel Fetched Sussessfully "));
 });
 
+const getSubscribers = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  if (!userId?.trim()) throw new ApiError(401, "userId is required");
+
+  const channel = await User.findOne({ _id: userId }).select(
+    "userName avatar _id"
+  );
+
+  if (!channel) throw new ApiError(404, "channel does not exist");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, channel, "User Channel Fetched Sussessfully "));
+});
+
 const getWatchHistory = asyncHandler(async (req, res) => {
+
+  console.log("from back ",req.user)
   const user = await User.aggregate([
     {
       $match: {
@@ -538,6 +553,45 @@ const getWatchHistory = asyncHandler(async (req, res) => {
     );
 });
 
+const addToHistory = asyncHandler(async (req, res) => {
+  const { videoId, userId } = req.params;
+
+  if (!userId || !videoId)
+    throw new ApiError(401, "userId and videoId are required ");
+
+  const user = await User.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(userId),
+      },
+    },
+    {
+      $lookup: {
+        from: "videos",
+        localField: "videos",
+        foreignField: "_id",
+        as: "videoDetails",
+      },
+    },
+    {
+      $project: {
+        videos: 1,
+        videoExists: { $in: [new mongoose.Types.ObjectId(videoId), "$videos"] },
+      },
+    },
+  ]);
+  user.select("-password -refreshToken");
+
+  if (!user)
+    throw new ApiError(
+      500,
+      "Something went wrong while adding video history to the user"
+    );
+
+  res.status(201).json(
+    new ApiResponse(200, createdUser, "User history updated successfully ") // return res obj then pass value to apiresponse constructor with code, data, msg
+  );
+});
 export {
   registerUser,
   logInUser,
@@ -551,4 +605,6 @@ export {
   getUserCannelProfile,
   getWatchHistory,
   loginbyRefreshToken,
+  addToHistory,
+  getSubscribers,
 };
