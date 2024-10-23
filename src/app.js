@@ -9,11 +9,6 @@ app.use(cors({
     credentials:true
 }))
 
-app.use(cors({
-  origin: "http://localhost:5173", // or your frontend URL during development
-  credentials: true,
-}));
-
 app.use(express.json({limit:"16kb"}))
 app.use(express.urlencoded({extended:true,limit:"16kb"}))  // to parse url data, extended means can be nested object
 app.use(express.static("public"))  // a common accessible folder to store resources
