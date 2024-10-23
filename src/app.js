@@ -4,16 +4,17 @@ import cookieparser from "cookie-parser"; //to access and set cookies on the ser
 
 const app = express();
 
-// const corsOptions = {
-//   origin: process.env.CORS_ORIGIN, // allow req from the origin mentioned
-//   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-//   allowedHeaders: ["Content-Type", "Authorization"],
-//   credentials: true,
-// };
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN, // allow req from the origin mentioned
+  methods: ["GET", "POST", "PUT", "DELETE","PATCH", "OPTIONS"],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Length', 'X-Knowledge'],
+  credentials: true,
+  maxAge: 86400, // Cache for 24 hours
+  optionsSuccessStatus: 200, // For older browsers
+};
 
-// // Enable CORS for all requests
-// app.use(cors(corsOptions));
-
+app.use(cors(corsOptions));
 
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" })); // to parse url data, extended means can be nested object
