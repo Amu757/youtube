@@ -50,5 +50,8 @@ app.use((req, res) => {
     res.status(404).json({ error: 'Not Found' });
   });
 
+app.get("/",(req,res)=>{
+    res.json("Hello !! ");
+})
 
 export {app}
