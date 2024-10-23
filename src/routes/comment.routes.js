@@ -4,8 +4,8 @@ import {
     deleteComment,
     getVideoComments,
     updateComment,
-} from "./src/controlers/comment.controller.js"
-import {verifyJWT} from "./src/middlewares/auth.middleware.js"
+} from "../controlers/comment.controller.js"
+import {verifyJWT} from "../middlewares/auth.middleware.js"
 
 const router = Router();
 

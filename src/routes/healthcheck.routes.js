@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { healthcheck } from "./src/controlers/healthcheck.controller.js"
+import { healthcheck } from "../controlers/healthcheck.controller.js"
 
 const router = Router();
 

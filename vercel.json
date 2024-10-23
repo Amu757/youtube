@@ -1,6 +1,9 @@
 {
   "version": 2,
-  "name":"studytube_backend",
-  "builds": [{ "src": "/app.js", "use": "@vercel/node" }],
-  "routes": [{ "src": "/(.*)", "dest": "/app.js" }]
+  "name": "studytube_backend",
+  "builds": [
+    { "src": "./src/index.js", "use": "@vercel/node" },
+    { "src": "./src/**/*", "use": "@vercel/static" }
+  ],
+  "routes": [{ "src": "./src/(.*)", "dest": "./src/app.js" }]
 }
