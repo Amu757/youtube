@@ -1,5 +1,5 @@
 {
   "vrsion": 2,
-  "name": [{ "src": "app.js", "use": "@vercel/node" }],
-  "routes": [{ "src": "/(.*)", "dest": "/app.js" }]
+  "name": [{ "src": "./src/app.js", "use": "@vercel/node" }],
+  "routes": [{ "src": "./src/(.*)", "dest": "/app.js" }]
 }
