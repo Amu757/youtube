@@ -6,8 +6,9 @@ dotenv.config(); // need experimental script in package.json file dev command
 
 connectDB() // its a async function that returns promise
 .then(()=>{
-    app.listen(process.env.PORT || 8000,()=>{  // avialable port on server or hosting system
-        console.log("server is running on localhost:" + process.env.PORT);
+    // app.listen(process.env.PORT || 8000,()=>{  // avialable port on server or hosting system
+    // console.log("server is running on localhost:" + process.env.PORT);
+    console.log("mongodb connection is done running on server")
     }) 
 })
   .catch((error) => {
