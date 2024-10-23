@@ -23,15 +23,15 @@ app.use(cookieparser())
 
 
 // routes import
-import userRouter from "./api/user.routes.js"
-import healthRouter from "./api/healthcheck.routes.js"
-import videoRouter from "./api/video.routes.js"
-import subscriptionRouter from "./api/subscription.routes.js"
-import playlistRouter from "./api/playlist.routes.js"
-import likeRouter from "./api/like.routes.js"
-import commentRouter from "./api/comment.routes.js"
-import tweetRouter from "./api/tweet.routes.js"
-import dashboardRouter from "./api/dashboard.routes.js"
+import userRouter from "../api/user.routes.js"
+import healthRouter from "../api/healthcheck.routes.js"
+import videoRouter from "../api/video.routes.js"
+import subscriptionRouter from "../api/subscription.routes.js"
+import playlistRouter from "../api/playlist.routes.js"
+import likeRouter from "../api/like.routes.js"
+import commentRouter from "../api/comment.routes.js"
+import tweetRouter from "../api/tweet.routes.js"
+import dashboardRouter from "../api/dashboard.routes.js"
 
 //routes declaration
 // /api/v1/users is standard prefix

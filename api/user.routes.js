@@ -14,9 +14,9 @@ import {
   loginbyRefreshToken,
   addToHistory,
   getSubscribers,
-} from "../controlers/user.controler.js";
-import { upload } from "../middlewares/multer.middleware.js";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
+} from "./src/controlers/user.controler.js";
+import { upload } from "./src/middlewares/multer.middleware.js";
+import { verifyJWT } from "./src/middlewares/auth.middleware.js";
 const router = Router();
 
 router.route("/register").post(
