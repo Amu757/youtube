@@ -1,5 +1,6 @@
 {
   "version": 2,
-  "name": [{ "src": "/app.js", "use": "@vercel/node" }],
+  "name":"studytube_backend",
+  "builds": [{ "src": "/app.js", "use": "@vercel/node" }],
   "routes": [{ "src": "/(.*)", "dest": "/app.js" }]
 }
