@@ -1,18 +1,18 @@
 import express from "express";
-import cors from "cors";
+// import cors from "cors";
 import cookieparser from "cookie-parser"; //to access and set cookies on the server
 
 const app = express();
 
-const corsOptions = {
-  origin: process.env.CORS_ORIGIN, // allow req from the origin mentioned
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-};
+// const corsOptions = {
+//   origin: process.env.CORS_ORIGIN, // allow req from the origin mentioned
+//   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//   allowedHeaders: ["Content-Type", "Authorization"],
+//   credentials: true,
+// };
 
-// Enable CORS for all requests
-app.use(cors(corsOptions));
+// // Enable CORS for all requests
+// app.use(cors(corsOptions));
 
 
 app.use(express.json({ limit: "16kb" }));
