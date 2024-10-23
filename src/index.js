@@ -14,3 +14,5 @@ connectDB() // its a async function that returns promise
   .catch((error) => {
     console.log("mongodb connection failed !!", error);
   });
+
+export default app;
