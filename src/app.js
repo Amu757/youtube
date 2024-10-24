@@ -1,6 +1,6 @@
 import express from "express";
-// import cors from "cors";
-import cookieparser from "cookie-parser"; //to access and set cookies on the server
+import cors from "cors";
+import cookieParser from 'cookie-parser' //to access and set cookies on the server
 
 const app = express();
 
@@ -19,7 +19,7 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" })); // to parse url data, extended means can be nested object
 app.use(express.static("public")); // a common accessible folder to store resources
-app.use(cookieparser());
+app.use(cookieParser());
 
 // routes import
 import userRouter from "./routes/user.routes.js";
@@ -55,13 +55,13 @@ app.use((err, req, res, next) => {
     });
 });
 
+app.get("/", (req, res) => {
+  res.json("Hello ! Welcome to deployed StudyTube server..");
+});
+
 // Fallback for undefined routes
 app.use((req, res) => {
   res.status(404).json({ error: "Not Found" });
-});
-
-app.get("/", (req, res) => {
-  res.json("Hello !! ");
 });
 
 export { app };
