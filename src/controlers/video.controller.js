@@ -4,6 +4,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadOnCloudinary, deleteResourse } from "../utils/cloudinary.js";
 import { Video } from "../model/video.model.js";
+import { Subscription } from "../model/subscription.model.js";
 import { User } from "../model/user.model.js";
 import { response } from "express";
 
@@ -76,37 +77,55 @@ const getMyVideos = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, allVideos, "all videos fetched successfuly"));
 });
 
+// not useful now
 const getSubscribedVideos = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 10, sortBy, sortType } = req.query;
-  //TODO: get all videos based on sort, pagination
-  if ([page, limit, sortBy, sortType].some((field) => field?.trim() === ""))
-    throw new ApiError(400, "All fields are required");
-  const sortTypeInt = parseInt(sortType, 10);
+  const { page = 1, limit = 10, sortBy = "createdAt", sortType = -1 } = req.query;
+  const { subscriberId } = req.params;
 
-  if (sortTypeInt !== 1 && sortTypeInt !== -1)
-    throw new ApiError(
-      401,
-      "invalid sortBy value , valid options are 1 for ascending and -1 for descending"
-    );
+  if (!subscriberId) throw new ApiError(401, "subscriberId is required");
 
-  const sortingBy = { sortType: sortTypeInt };
-  const allVideos = await Video
-    .find
-    // make a loop ware first find the list of my subscriped chanels and then get videos by chanel id
-    ()
-    .limit(limit)
-    .sort(sortingBy);
+  // Get channels that the user is subscribed to
+  const channels = await Subscription.find({ subscriber: subscriberId }).select("channel");
 
-  if (!allVideos)
-    throw new ApiError(401, "no video present might you have no subscriptions");
+  if (!channels.length) {
+    throw new ApiError(401, "No subscriptions found or no data available.");
+  }
+
+  const channelIds = channels.map((sub) => sub.channel);
+
+  // Find videos from the subscribed channels and populate owner's userId and avatar
+  const allVideos = await Video.find({ owner: { $in: channelIds }, isPublished: true })
+    .populate({
+      path: 'owner', // Populating the owner field
+      select: 'userName avatar', // Selecting only the userName and avatar fields from User model
+    })
+    .select("title description videoFile thumbnail view createdAt owner")
+    .sort({ [sortBy]: parseInt(sortType, 10) })
+    .limit(parseInt(limit, 10))
+
+  if (!allVideos.length) {
+    throw new ApiError(401, "No videos found for your subscriptions.");
+  }
+
+  // Format response
+  const responseData = allVideos.map((video) => ({
+    title: video.title,
+    description: video.description,
+    videoFile: video.videoFile,
+    thumbnail: video.thumbnail,
+    view: video.view,
+    createdAt: video.createdAt,
+    userName: video.owner.userName, // owner's userId
+    avatar: video.owner.avatar, // owner's avatar URL
+  }));
 
   return res
     .status(200)
     .json(
       new ApiResponse(
         200,
-        allVideos,
-        "all subscribed videos fetched successfuly"
+        responseData,
+        "All subscribed videos fetched successfully"
       )
     );
 });
