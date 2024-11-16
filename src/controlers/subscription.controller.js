@@ -62,7 +62,7 @@ const toggleSubscription = asyncHandler(async (req, res) => {
     );
 });
 
-// controller to return subscriber list of a channel
+// subscriber list of a channel
 const getUserChannelSubscribers = asyncHandler(async (req, res) => {
   const { channelId } = req.params;
   if (!channelId) throw new ApiError(401, "channelId is required ");
@@ -88,14 +88,12 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     );
 });
 
-// controller to return channel list to which user has subscribed
+// channel list to which user has subscribed
 const getSubscribedChannels = asyncHandler(async (req, res) => {
   const { subscriberId } = req.params;
-
   if (!subscriberId) throw new ApiError(401, "subscriberid is required ");
-
   const channels = await Subscription.find({ subscriber: subscriberId }).select(
-    "-subscriber -__v"
+    "-subscriber -__v -_id"
   );
 
   if (!channels)
@@ -110,6 +108,7 @@ const getSubscribedChannels = asyncHandler(async (req, res) => {
       new ApiResponse(200, channels, "your subscribed channel list is fetched")
     );
 });
+
 const getSubscribedStatus = asyncHandler(async (req, res) => {
   const { channelId } = req.params;
 

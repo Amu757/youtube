@@ -1,11 +1,10 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { User } from "../model/user.model.js";
+import { Video } from "../model/video.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
-import multer from "multer";
-import mongoose from "mongoose";
 
 const genAccessAndRefreshToken = async (userid) => {
   try {
@@ -46,7 +45,6 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
   } = userInfo;
 
-  //validation
   if (
     [fullName, userName, gender, about, email, password].some(
       (field) => field?.trim() === ""
@@ -482,9 +480,7 @@ const getSubscribers = asyncHandler(async (req, res) => {
   const { userId } = req.params;
   if (!userId?.trim()) throw new ApiError(401, "userId is required");
 
-  const channel = await User.findOne({ _id: userId }).select(
-    "userName avatar _id"
-  );
+  const channel = await User.findById(userId).select("userName avatar _id");
 
   if (!channel) throw new ApiError(404, "channel does not exist");
 
@@ -494,61 +490,43 @@ const getSubscribers = asyncHandler(async (req, res) => {
 });
 
 const getWatchHistory = asyncHandler(async (req, res) => {
+  const { userId } = req.params;
+  if (!userId) throw new ApiError(401, "userId is required.");
+  const userdata = await User.findById(userId).select("watchHistory");
+  const videoIds = userdata.watchHistory.map((id)=> id)
+  if (!videoIds) throw new ApiError(404, "User not found.");
+  const allVideos = await Video.find({ _id: { $in: videoIds } })
+    .populate({
+      path: "owner", // Populating the owner field
+      select: "userName avatar", // Selecting only the userName and avatar fields from User model
+    })
+    .select("title description videoFile thumbnail view createdAt owner");
+  // .sort({ [sortBy]: parseInt(sortType, 10) })
+  // .limit(parseInt(limit, 10))
 
-  console.log("from back ",req.user)
-  const user = await User.aggregate([
-    {
-      $match: {
-        //as mongoose did not return mongodb id in _id it returns only string, but while sending db query it internaly converts it unlike in aggreate pipeline
-        _id: new mongoose.Types.ObjectId(req.user._id), //this convers a _id string to mongoose obj that helps to fetch db while using aggregation
-      }, //got user
-    },
-    {
-      $lookup: {
-        //to find all the videos having _id
-        from: "videos",
-        localField: "watchHistory",
-        foreignField: "_id",
-        as: "watchHistory",
-        pipeline: [
-          // additions sub pipe lines
-          {
-            $lookup: {
-              //to find the owener of the video by looking into user collections _id field
-              from: "users",
-              localField: "owner",
-              foreignField: "_id",
-              as: "owner",
-              pipeline: [
-                {
-                  $project: {
-                    fullName: 1,
-                    username: 1,
-                    avatar: 1,
-                  },
-                },
-              ],
-            },
-          },
-          {
-            $addFields: {
-              owner: {
-                $first: "$owner", // to make obj from the owner field that is a array, make convenient to frontend
-              },
-            },
-          },
-        ],
-      },
-    },
-  ]);
+  if (!allVideos.length) {
+    throw new ApiError(401, "No videos found in WatchHistory.");
+  }
 
-  return res
+  // Format response
+  const responseData = allVideos.map((video) => ({
+    title: video.title,
+    description: video.description,
+    videoFile: video.videoFile,
+    thumbnail: video.thumbnail,
+    view: video.view,
+    createdAt: video.createdAt,
+    userName: video.owner.userName, // owner's userId
+    avatar: video.owner.avatar, // owner's avatar URL
+  }));
+
+  res
     .status(200)
     .json(
       new ApiResponse(
         200,
-        user[0].watchHistory,
-        "Watch history fetch succesfully"
+        responseData,
+        "User watch history retrieved successfully"
       )
     );
 });
@@ -557,41 +535,33 @@ const addToHistory = asyncHandler(async (req, res) => {
   const { videoId, userId } = req.params;
 
   if (!userId || !videoId)
-    throw new ApiError(401, "userId and videoId are required ");
+    throw new ApiError(401, "userId and videoId are required.");
 
-  const user = await User.aggregate([
-    {
-      $match: {
-        _id: new mongoose.Types.ObjectId(userId),
-      },
-    },
-    {
-      $lookup: {
-        from: "videos",
-        localField: "videos",
-        foreignField: "_id",
-        as: "videoDetails",
-      },
-    },
-    {
-      $project: {
-        videos: 1,
-        videoExists: { $in: [new mongoose.Types.ObjectId(videoId), "$videos"] },
-      },
-    },
-  ]);
-  user.select("-password -refreshToken");
+  // Find the user
+  const user = await User.findById(userId);
 
-  if (!user)
-    throw new ApiError(
-      500,
-      "Something went wrong while adding video history to the user"
+  if (!user) throw new ApiError(404, "User not found.");
+
+  // Check if video is already in watch history
+  const videoExists = user.watchHistory.includes(videoId);
+
+  if (!videoExists) {
+    // Add video to watch history
+    user.watchHistory.push(videoId);
+    await user.save();
+  }
+
+  res
+    .status(201)
+    .json(
+      new ApiResponse(
+        201,
+        user.watchHistory,
+        "User history updated successfully"
+      )
     );
-
-  res.status(201).json(
-    new ApiResponse(200, createdUser, "User history updated successfully ") // return res obj then pass value to apiresponse constructor with code, data, msg
-  );
 });
+
 export {
   registerUser,
   logInUser,

@@ -19,7 +19,7 @@ router.use(verifyJWT); // Apply verifyJWT middleware to all routes in this file
 router.route("/getallvideos").get(getAllVideos);
 router.route("/getmyvideos").get(getMyVideos);
 
-router.route("/getSubscribedVideos").get(getSubscribedVideos);
+router.route("/getSubscribedVideos/:subscriberId").get(getSubscribedVideos);
 
 router.route("/").post(
   upload.fields([
